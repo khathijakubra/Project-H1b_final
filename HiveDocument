@@ -1,0 +1,67 @@
+HIVE:
+
+The Hadoop ecosystem component, Apache Hive, is an open source data warehouse system for querying and analyzing large datasets stored in Hadoop files. Hive do three main functions: data summarization, query, and analysis.
+
+Hive use language called HiveQL (HQL), which is similar to SQL. HiveQL automatically translates SQL-like queries into MapReduce jobs which will execute on Hadoop.
+
+Main parts of Hive are:
+
+Metastore – It stores the metadata.
+Driver – Manage the lifecycle of a HiveQL statement.
+Query compiler – Compiles HiveQL into Directed Acyclic Graph(DAG).
+Hive server – Provide a thrift interface and JDBC/ODBC server.
+
+Hive is a data warehouse infrastructure tool to process structured data in Hadoop. It resides on top of Hadoop to summarize Big Data, and makes querying and analyzing easy.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+2)a)Which part of the US has the most Data Engineer jobs for each year?
+
+a)create table hide2011(worksite string, job_title string, year string, total string)
+row format delimited
+fields terminated by '\t'
+stored as textfile;
+
+insert overwrite table hide2011 select worksite, job_title, year, count(*) as total from h1b_final where year = 2011 and  lower(job_title) like '%data engineer%' group by worksite, year, job_title order by total desc limit 10;
+
+2)b)find top 5 locations in the US who have got certified visa for each year.[certified]
+
+create table hello2011(worksite string, case_status string, year string, total string)
+row format delimited
+fields terminated by '\t'
+stored as textfile;
+
+insert overwrite table hello2011 select worksite, case_status, year, count(*) as total from h1b_final where year = 2011 and case_status = 'CERTIFIED' group by worksite, case_status, year order by total desc limit 5;
+
+4)
+
+create table year2011(employer_name string, year string, petition string)row format delimited
+fields terminated by ','
+stored as textfile;
+
+
+insert overwrite table year2011 select employer_name, year, count(*) as petition from h1b_final where year = 2011 group by year, employer_name order by petition desc limit 5;
+
+
+// create a seperate table for each year from 2011-2016 year2011-year2016 
+
+//perform union command on all the 6 tables to join them.
+
+
+ select * from year2011 union select * from year2012 union select * from year2013 union select * from year2014 union select * from year2015 union select * from year2016 order by year;
+
+5)a)
+
+select job title, count(*) as total  from h1b_final group by job title order by total desc limit 10;
+
+5)b)
+
+create 6 tables 
+create table table name(job_title string, year string, total string )
+row format delimited
+fields terminated by '\t'
+stored as textfile;
+
+insert overwrite table hive2011 select job_title, count(*) as total, year from h1b_final where year = 2011 and lower(case_status) = 'certified' group by year, job_title order by total desc limit 10;
+
+
