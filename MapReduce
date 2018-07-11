@@ -1,0 +1,252 @@
+MapReduce is the core Hadoop ecosystem component which provides data processing. MapReduce is a software framework for easily writing applications that process the vast amount of structured and unstructured data stored in the Hadoop Distributed File system.
+
+MapReduce programs are parallel in nature, thus are very useful for performing large-scale data analysis using multiple machines in the cluster. Thus, it improves the speed and reliability of cluster this parallel processing.
+
+Hadoop Ecosystem component ‘MapReduce’ works by breaking the processing into two phases:
+
+1)Map phase
+2)Reduce phase
+Each phase has key-value pairs as input and output. In addition, programmer also specifies two functions: map function and reduce function
+
+Map function takes a set of data and converts it into another set of data, where individual elements are broken down into tuples (key/value pairs). Read Mapper in detail.
+
+Reduce function takes the output from the Map as an input and combines those data tuples based on the key and accordingly modifies the value of the key. Read Reducer in detail.
+
+Partitioner controls the partitioning of the keys of the intermediate map-outputs. The key (or a subset of the key) is used to derive the partition, typically by a hash function. The total number of partitions is the same as the number of reduce tasks for the job. Hence this controls which of the m reduce tasks the intermediate key (and hence the record) is sent to for reduction.
+
+Combiner, also known as a semi-reducer, is an optional class that operates by accepting the inputs from the Map class and thereafter passing the output key-value pairs to the Reducer class. The main function of a Combiner is to summarize the map output records with the same key
+
+TERMINOLOGIES:
+
+Mapper - Mapper maps the input key/value pairs to a set of intermediate key/value pair.
+
+NamedNode - Node that manages the Hadoop Distributed File System (HDFS).
+
+DataNode - Node where data is presented in advance before any processing takes place.
+
+MasterNode - Node where JobTracker runs and which accepts job requests from clients.
+
+SlaveNode - Node where Map and Reduce program runs.
+
+JobTracker - Schedules jobs and tracks the assign jobs to Task tracker.
+
+Task Tracker - Tracks the task and reports status to JobTracker.
+
+Job - A program is an execution of a Mapper and Reducer across a dataset.
+
+Task - An execution of a Mapper or a Reducer on a slice of data.
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+1)a)Is the number of petitions with Data Engineer job title increasing over time?
+
+import java.io.IOException;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+
+
+public class Ques1a {
+	public static class MapClass extends Mapper<LongWritable,Text,Text,IntWritable>
+	{
+		public void map(LongWritable key, Text value, Context context)
+		{
+			try{
+	            String[] str = value.toString().split("\t");	 
+	            String year = str[7];
+	            String j_title = str[4];
+	            if(j_title.equalsIgnoreCase("data engineer")){
+	            	context.write(new Text(year), new IntWritable(1));
+	            }
+	            
+	            
+			}
+			catch(Exception e)
+	         {
+	            System.out.println(e.getMessage());
+	         }
+		}
+		}
+	public static class ReduceClass extends Reducer<Text,IntWritable,Text,IntWritable>{
+		
+		public void reduce(Text key,Iterable<IntWritable> value,Context context) throws IOException, InterruptedException{
+			
+			int total = 0;
+			for(IntWritable val : value){
+				total += val.get();
+				//count++;
+			}
+			
+			context.write(key, new IntWritable(total));
+		}
+	}
+	
+	public static void main(String[] args) throws Exception 
+	{
+		Configuration conf = new Configuration();
+	    Job job = Job.getInstance(conf, "Applicant Count");
+	    job.setJarByClass(Ques1a.class);
+	    job.setMapperClass(MapClass.class);
+	    job.setReducerClass(ReduceClass.class);
+	    job.setNumReduceTasks(1);
+	    job.setOutputKeyClass(Text.class);
+	    job.setOutputValueClass(IntWritable.class);
+	    FileInputFormat.addInputPath(job, new Path(args[0]));
+	    FileOutputFormat.setOutputPath(job, new Path(args[1]));
+	    System.exit(job.waitForCompletion(true) ? 0 : 1);
+	    
+
+	}
+
+}
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+3)
+import java.io.IOException;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+
+
+public class Ques3 {
+	public static class MapClass extends Mapper<LongWritable,Text,Text,IntWritable>
+	{
+		public void map(LongWritable key, Text value, Context context)
+		{
+			try{
+	            String[] str = value.toString().split("\t");	 
+	            String j_title = str[4];
+	            String soc_name = str[3].toLowerCase();
+	            String c_status = str[1];
+	            if(j_title.contains("DATA SCIENTIST")&&c_status.equalsIgnoreCase("certified")){
+	            	context.write(new Text(soc_name), new IntWritable(1));
+	            }
+	            
+	            
+			}
+			catch(Exception e)
+	         {
+	            System.out.println(e.getMessage());
+	         }
+		}
+		}
+	public static class ReduceClass extends Reducer<Text,IntWritable,Text,IntWritable>{
+		
+		public void reduce(Text key,Iterable<IntWritable> value,Context context) throws IOException, InterruptedException{
+			String s_name = null;
+			int total = 0;
+			int max = 0;
+			for(IntWritable val : value){
+				total += val.get();
+				//count++;
+				
+			}
+			
+			context.write(new Text(s_name), new IntWritable(total));
+		}
+	}
+	
+	public static void main(String[] args) throws Exception 
+	{
+		Configuration conf = new Configuration();
+	    Job job = Job.getInstance(conf, "Applicant Count");
+	    job.setJarByClass(Ques3.class);
+	    job.setMapperClass(MapClass.class);
+	    job.setReducerClass(ReduceClass.class);
+	    job.setNumReduceTasks(1);
+	    job.setOutputKeyClass(Text.class);
+	    job.setOutputValueClass(IntWritable.class);
+	    FileInputFormat.addInputPath(job, new Path(args[0]));
+	    FileOutputFormat.setOutputPath(job, new Path(args[1]));
+	    System.exit(job.waitForCompletion(true) ? 0 : 1);
+	    
+
+	}
+
+}
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+7)
+
+import java.io.IOException;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+
+
+public class Ques7 {
+	public static class MapClass extends Mapper<LongWritable,Text,Text,LongWritable>
+	{
+		public void map(LongWritable key, Text value, Context context)
+		{
+			try{
+	            String[] str = value.toString().split("\t");	 
+	            String year = str[7];
+	            context.write(new Text(year), new LongWritable(1));
+	            
+			}
+			catch(Exception e)
+	         {
+	            System.out.println(e.getMessage());
+	         }
+		}
+		}
+	public static class ReduceClass extends Reducer<Text,LongWritable,Text,LongWritable>{
+		
+		public void reduce(Text key,Iterable<LongWritable> value,Context context) throws IOException, InterruptedException{
+			long count = 0;
+			for(LongWritable val : value){
+				count += val.get();
+			}
+			context.write(key, new LongWritable(count));
+		}
+	}
+	
+	public static void main(String[] args) throws Exception 
+	{
+		Configuration conf = new Configuration();
+	    Job job = Job.getInstance(conf, "Applicant Count");
+	    job.setJarByClass(Ques7.class);
+	    job.setMapperClass(MapClass.class);
+	    job.setReducerClass(ReduceClass.class);
+	    job.setNumReduceTasks(1);
+	    job.setOutputKeyClass(Text.class);
+	    job.setOutputValueClass(LongWritable.class);
+	    FileInputFormat.addInputPath(job, new Path(args[0]));
+	    FileOutputFormat.setOutputPath(job, new Path(args[1]));
+	    System.exit(job.waitForCompletion(true) ? 0 : 1);
+	    
+
+	}
+
+}
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
